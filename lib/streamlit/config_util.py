@@ -1,8 +1,9 @@
 import toml
-from typing import Dict
+from typing import Dict, List
 
 import click
 
+from streamlit.file_util import streamlit_write
 from streamlit.config_option import ConfigOption
 
 
@@ -23,11 +24,11 @@ def server_option_changed(
     return False
 
 
-def show_config(
+def generate_config(
     section_descriptions: Dict[str, str],
     config_options: Dict[str, ConfigOption],
-) -> None:
-    """Print the given config sections/options to the terminal."""
+    save_to_file: bool = False,
+) -> List[str]:
     SKIP_SECTIONS = ("_test",)
 
     out = []
@@ -41,16 +42,28 @@ def show_config(
     )
 
     def append_desc(text):
-        out.append(click.style(text, bold=True))
+        if save_to_file:
+            out.append(text)
+        else:
+            out.append(click.style(text, bold=True))
 
     def append_comment(text):
-        out.append(click.style(text))
+        if save_to_file:
+            out.append(text)
+        else:
+            out.append(click.style(text))
 
     def append_section(text):
-        out.append(click.style(text, bold=True, fg="green"))
+        if save_to_file:
+            out.append(text)
+        else:
+            out.append(click.style(text, bold=True, fg="green"))
 
     def append_setting(text):
-        out.append(click.style(text, fg="green"))
+        if save_to_file:
+            out.append(text)
+        else:
+            out.append(click.style(text, fg="green"))
 
     def append_newline():
         out.append("")
@@ -94,7 +107,10 @@ def show_config(
 
             if option.deprecated:
                 append_comment("#")
-                append_comment("# " + click.style("DEPRECATED.", fg="yellow"))
+                if not save_to_file:
+                    append_comment("# " + click.style("DEPRECATED.", fg="yellow"))
+                else:
+                    append_comment("# DEPRECATED.")
                 append_comment(
                     "# %s" % "\n".join(_clean_paragraphs(option.deprecation_text))
                 )
@@ -113,10 +129,27 @@ def show_config(
 
             toml_setting = toml.dumps({key: option.value})
 
+            if len(toml_setting) and not option_is_manually_set:
+                toml_setting = "#%s" % toml_setting
+
             if len(toml_setting) == 0:
                 toml_setting = "#%s =\n" % key
 
             append_setting(toml_setting)
+
+    if save_to_file:
+        with streamlit_write("config.toml", project=True) as f:
+            f.write("\n".join(out))
+            click.echo(f"Wrote config file to {f.name}")
+    return out
+
+
+def show_config(
+    section_descriptions: Dict[str, str],
+    config_options: Dict[str, ConfigOption],
+) -> None:
+    """Print the given config sections/options to the terminal."""
+    out = generate_config(section_descriptions, config_options, save_to_file=False)
 
     click.echo("\n".join(out))
 
