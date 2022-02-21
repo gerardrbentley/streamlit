@@ -83,7 +83,7 @@ def streamlit_read(path, binary=False):
 
 
 @contextlib.contextmanager
-def streamlit_write(path, binary=False):
+def streamlit_write(path, binary=False, project=False):
     """
     Opens a file for writing within the streamlit path, and
     ensuring that the path exists. For example:
@@ -100,7 +100,10 @@ def streamlit_write(path, binary=False):
     mode = "w"
     if binary:
         mode += "b"
-    path = get_streamlit_file_path(path)
+    if project:
+        path = get_project_streamlit_file_path(path)
+    else:
+        path = get_streamlit_file_path(path)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     try:
         with open(path, mode) as handle:
