@@ -284,6 +284,22 @@ def config_show(**kwargs):
     _config.show_config()
 
 
+@config.command("generate")
+@configurator_options
+@click.option("--defaults", is_flag=True)
+def config_generate(**kwargs):
+    """Generate a project config file (default path: ./.streamlit/config.toml)
+    Optionally enforce Streamlit default values with --defaults
+    """
+
+    if not kwargs["defaults"]:
+        del kwargs["defaults"]  # Suppress Streamlit warning
+        bootstrap.load_config_options(flag_options=kwargs)
+        _config.generate_config()
+    else:
+        _config.generate_config(use_defaults=True)
+
+
 # SUBCOMMAND: activate
 
 

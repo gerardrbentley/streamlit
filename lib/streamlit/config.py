@@ -840,6 +840,17 @@ def show_config() -> None:
         )
 
 
+def generate_config(use_defaults=False) -> None:
+    """Generate and save a config file to project folder."""
+    with _config_lock:
+        options = _config_options_template if use_defaults else _config_options
+        config_util.generate_config(
+            _section_descriptions,
+            cast(Dict[str, ConfigOption], options),
+            save_to_file=True,
+        )
+
+
 # Load Config Files #
 
 
