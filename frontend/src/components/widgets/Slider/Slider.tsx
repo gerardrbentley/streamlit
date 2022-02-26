@@ -195,7 +195,11 @@ class Slider extends React.PureComponent<Props, State> {
     return sprintf(format, value)
   }
 
-  private thumbValueAlignment(): void {
+  private thumbValueAlignment(
+    currentValue: number,
+    min: number,
+    max: number
+  ): void {
     const slider = this.sliderRef.current
     const thumb = this.thumbValueRef.current
 
@@ -203,15 +207,21 @@ class Slider extends React.PureComponent<Props, State> {
       const sliderPosition = slider.getBoundingClientRect()
       const thumbPosition = thumb.getBoundingClientRect()
 
-      thumb.style.left = thumbPosition.left < sliderPosition.left ? "0" : ""
-      thumb.style.right = thumbPosition.right > sliderPosition.right ? "0" : ""
+      thumb.style.left =
+        currentValue == min || thumbPosition.left < sliderPosition.left
+          ? "0"
+          : ""
+      thumb.style.right =
+        currentValue == max || thumbPosition.right > sliderPosition.right
+          ? "0"
+          : ""
     }
   }
 
   // eslint-disable-next-line react/display-name
   private renderThumb = React.forwardRef<HTMLDivElement, SharedProps>(
     (props: SharedProps, ref): JSX.Element => {
-      const { $value, $thumbIndex } = props
+      const { $value, $thumbIndex, $min, $max } = props
       const formattedValue = this.formatValue($value[$thumbIndex])
       const passThrough = pick(props, [
         "role",
@@ -233,7 +243,7 @@ class Slider extends React.PureComponent<Props, State> {
       }
 
       // Check the thumb value's alignment vs. slider container
-      this.thumbValueAlignment()
+      this.thumbValueAlignment($value[$thumbIndex], $min, $max)
 
       return (
         <StyledThumb
