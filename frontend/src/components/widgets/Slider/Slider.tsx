@@ -318,8 +318,8 @@ class Slider extends React.PureComponent<Props, State> {
             Track: {
               style: {
                 paddingBottom: 0,
-                paddingLeft: 0,
-                paddingRight: 0,
+                paddingLeft: spacing.halfSmFont,
+                paddingRight: spacing.halfSmFont,
                 paddingTop: spacing.twoThirdsSmFont,
               },
             },
